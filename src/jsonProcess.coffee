@@ -187,8 +187,8 @@ class G_root.JsonProcess extends G_root.Process
 
 
   ###*
-  * Register a custom handler, check [Lst](/blob/master/src/ModelHandler/Lst.coffee)
-  * or [Model](/blob/master/src/ModelHandler/Model.coffee) handler
+  * Register a custom handler, check [Lst](/src/ModelHandler/Lst.coffee)
+  * or [Model](/src/ModelHandler/Model.coffee) handler
   * @param {Object} handler the handler
   *
   *```js

@@ -125,8 +125,8 @@ Add a callback to call on Model change (child only)
 
 ## registerHandler(handler)
 
-Register a custom handler, check [Lst](/blob/master/src/ModelHandler/Lst.coffee)
-or [Model](/blob/master/src/ModelHandler/Model.coffee) handler
+Register a custom handler, check [Lst](/src/ModelHandler/Lst.coffee)
+or [Model](/src/ModelHandler/Model.coffee) handler
 
 ### Params:
 
