@@ -1,0 +1,26 @@
+{
+  "name": "spinal-process-jsonprocess",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "coffee --transpile -M --output lib --compile src",
+    "dev": "coffee --transpile -w -M --output lib --compile src",
+    "doc": "markdox -o README.md src/jsonProcess.coffee"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/preset-env": "^7.0.0-beta.54",
+    "babel-core": "^6.26.3",
+    "babelify": "^8.0.0",
+    "browserify": "^13.0.0",
+    "coffeedoc": "^0.3.1",
+    "coffeescript": "^2.3.1"
+  },
+  "dependencies": {
+    "q": "^1.5.1",
+    "spinal-core-connectorjs": "git+https://github.com/spinalcom/spinal-core-connectorjs.git"
+  }
+}
