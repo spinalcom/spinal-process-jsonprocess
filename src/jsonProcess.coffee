@@ -124,10 +124,14 @@ class G_root.JsonProcess extends G_root.Process
       max_depth = depth + 2
     # wait model rdy
     return G_root.JsonProcess._wait_model_sync_server(model).then(() ->
-      if (typeof G_root.JsonProcess._getJsonProcess(model) is "undefined")
-        G_root.JsonProcess._JsonProcess[model._server_id] =
+      process = G_root.JsonProcess._getJsonProcess(model)
+      if (typeof process is "undefined")
+        process = G_root.JsonProcess._JsonProcess[model._server_id] =
           new G_root.JsonProcess(model, max_depth, load_ptr, depth)
-      return G_root.JsonProcess._getJsonProcess(model)._is_rdy
+      if (process._max_depth < max_depth)
+        process._max_depth = max_depth
+        process._is_rdy = process._update()
+      return process._is_rdy
     )
 
   ###*
@@ -183,7 +187,7 @@ class G_root.JsonProcess extends G_root.Process
   ###*
   * add to the max_depth and it's child
   * @param {Obj} json the Json or a child obtained via create_JsonProcess MUST have a `_server_id`
-  * @param {Number} new max_dapth to add in children
+  * @param {Number} new max_depth to add in children
   * @returns {Function} call it to unregister the callback
   ###
   @addDepth: (json, depth_to_add) ->
@@ -191,15 +195,17 @@ class G_root.JsonProcess extends G_root.Process
       return Promise.reject(new Error("JsonProcess.addDepth param [depth_to_add] must be > 0"))
     targetJsonProcess = G_root.JsonProcess._getJsonProcess(json)
     targetJsonProcess._max_depth += depth_to_add
-    targetJsonProcess._is_rdy = targetJsonProcess._update.call(targetJsonProcess).then(
-      (_json) ->
-        for handler in G_root.JsonProcess._type_handler
-          if (targetJsonProcess._model instanceof handler.modelType and
-          typeof handler.set_children_depth_handler == 'function'
-          )
-            return handler.set_children_depth_handler(_json, targetJsonProcess._max_depth)
+    targetJsonProcess._is_rdy = targetJsonProcess._update.call(targetJsonProcess)
+    
+    # .then(
+    #   (_json) ->
+    #     for handler in G_root.JsonProcess._type_handler
+    #       if (targetJsonProcess._model instanceof handler.modelType and
+    #       typeof handler.set_children_depth_handler == 'function'
+    #       )
+    #         return handler.set_children_depth_handler(_json, targetJsonProcess._max_depth)
 
-    )
+    # )
     targetJsonProcess._is_rdy
 
   @_getJsonProcess: (obj) ->

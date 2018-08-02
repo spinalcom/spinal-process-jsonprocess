@@ -29,31 +29,8 @@ module.exports = {
       if  _model._attribute_names.indexOf(model_key)
         delete _json.data[model_key]
     prom = for model_key in _model._attribute_names
-      if typeof _json.data[model_key] is 'undefined'
-        G_root.JsonProcess._assignWithKey.call(@, _json.data, model_key, _model)
-      else if _json.data[model_key]._server_id != _model[model_key]._server_id
-        delete _json.data[model_key]
-        G_root.JsonProcess._assignWithKey.call(@, _json.data, model_key, _model)
-      else
-        _json.data[model_key]
+      G_root.JsonProcess._assignWithKey.call(@, _json.data, model_key, _model)
     return Promise.all(prom).then((data) ->
       return _json)
 
-  ###*
-  * handler to "update" the max_depth of children
-  * Optionnal, if  not definied will use the default one (Model / Lst / Ptr)
-  * @returns a promise with the _json in the resolve
-  ###
-  set_children_depth_handler: (_json, new_max_depth) ->
-    process = G_root.JsonProcess._getJsonProcess(_json)
-    _model = process._model
-    prom = for model_key in _model._attribute_names
-      targetJsonProcess = G_root.JsonProcess._getJsonProcess(_json.data[model_key])
-      if (targetJsonProcess._max_depth < new_max_depth)
-        targetJsonProcess._max_depth = new_max_depth
-        targetJsonProcess._is_rdy = targetJsonProcess._update()
-      targetJsonProcess._is_rdy
-    return Promise.all(prom).then(() ->
-      return process._json
-    )
 }

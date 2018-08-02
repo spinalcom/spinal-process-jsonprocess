@@ -1,6 +1,19 @@
 require("spinal-core-connectorjs")
 G_root = if typeof window == "undefined" then global else window
 
+load_ptr_func = (ptr) ->
+  target_ptr = ptr.data.value
+  if (target_ptr && typeof FileSystem._objects[target_ptr] != 'undefined')
+    return Promise.resolve(FileSystem._objects[target_ptr])
+  return new Promise((resolve, reject) ->
+    ptr.load((result) ->
+      if (result)
+        resolve(result)
+      else
+        reject("Ptr load error target = #{target_ptr}")
+    )
+  )
+
 module.exports = {
   modelType: G_root.Ptr,
   modelName: "Ptr",
@@ -9,40 +22,15 @@ module.exports = {
   handler: () ->
     _json = @_json
     _model = @_model
-    if @_load_ptr == true
-      if (_model.data.value == 0)
-        _json.data = {
-            _server_id: _model.data.value
-        }
-        return Promise.resolve(_json)
-      return ((new Promise((resolve, reject) ->
-        _model.load((ptr) ->
-          if ptr
-            resolve(ptr)
-          else
-            reject("Load error: " + _model._server_id)
-        )
-      ))
+    if @_load_ptr == true || _model.data.value != 0
+      return load_ptr_func(_model)
       .then((m) =>
         return G_root.JsonProcess._assignWithModel.call(@, @_json, "data", m)
-      , (error) -> console.error error))
+      , (error) -> console.error error)
     else
       _json.data = {
           _server_id: _model.data.value
       }
       return Promise.resolve(_json)
 
-  ###*
-  * handler to "update" the max_depth of children
-  * Optionnal, if  not definied will use the default one (Model / Lst / Ptr)
-  * @returns a promise with the _json in the resolve
-  ###
-  set_children_depth_handler: (_json, new_max_depth) ->
-    process = G_root.JsonProcess._getJsonProcess(_json)
-    if (process._max_depth < new_max_depth)
-      process._max_depth = new_max_depth
-      process._is_rdy = process._update()
-    return process._is_rdy.then(() ->
-      return process._json
-    )
 }

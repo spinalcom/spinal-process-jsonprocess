@@ -19,7 +19,8 @@ module.exports = {
   prority: 1
 
   ###*
-  * [Function] The handler itself return a promise with the _json in the resolve
+  * [Function] The handler itself
+  * @returns {Promise} a promise with the _json in the resolve
   ###
   handler: () ->
     _json = @_json
@@ -35,19 +36,4 @@ module.exports = {
     return Promise.all(prom).then( (data) ->
       return _json)
 
-  ###*
-  * handler to "update" the max_depth of children
-  * Optionnal, if  not definied will use the default one (Model / Lst / Ptr)
-  ###
-  set_children_depth_handler: (_json, new_max_depth) ->
-    prom = for child in _json.data
-      targetJsonProcess = G_root.JsonProcess._getJsonProcess(child)
-      if (targetJsonProcess.max_depth < new_max_depth)
-        targetJsonProcess.max_depth = new_max_depth
-        targetJsonProcess._is_rdy = targetJsonProcess._update()
-      targetJsonProcess._is_rdy
-
-    return Promise.all(prom).then(() ->
-      return process._json
-    )
 }
