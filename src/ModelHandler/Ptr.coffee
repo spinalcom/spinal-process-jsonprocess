@@ -11,7 +11,10 @@ module.exports = {
     _model = @_model
     if @_load_ptr == true
       if (_model.data.value == 0)
-        return Promise.reject()
+        _json.data = {
+            _server_id: _model.data.value
+        }
+        return Promise.resolve(_json)
       return ((new Promise((resolve, reject) ->
         _model.load((ptr) ->
           if ptr
