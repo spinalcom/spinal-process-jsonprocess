@@ -45,7 +45,7 @@ let wait_for_endround = file => {
 let callback_success = file => {
   wait_for_endround(file).then(() => {
     // console.log(file[0]._ptr);
-    create_JsonProcess(file, 3, false)
+    create_JsonProcess(file, 2, true)
       .then(json => {
         // console.log("-** TEST **-", _process);
 
@@ -54,6 +54,11 @@ let callback_success = file => {
         });
 
         console.log(JSON.stringify(json, null, 2));
+        return JsonProcess.addDepth(json.data[1], 3).then(local_change_json => {
+          // local_change_json == json.data[1]
+          console.log("=====================================================");
+          console.log(JSON.stringify(json, null, 2));
+        });
       })
       .catch(console.error);
   });

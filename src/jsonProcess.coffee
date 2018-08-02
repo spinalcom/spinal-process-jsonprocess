@@ -113,7 +113,7 @@ class G_root.JsonProcess extends G_root.Process
   ###*
   * Static Method to create a JsonProcess
   * @param model [Model] SpinalCore model to follow
-  * @param max_depth [Number = null] the max depth default is depth + 2
+  * @param max_depth [Number = null] the max depth default is depth + 2; if -1 All Children are loaded
   * @param load_ptr [Bool = false] to load or not the ptr
   * @param depth [Number = 0] current depth default at 0
   * @returns [Promise] the `_json` attribute is returned when resolved
@@ -133,7 +133,7 @@ class G_root.JsonProcess extends G_root.Process
   ###*
   * Static Method to create a JsonProcess
   * @param server_id [Number] SpinalCore model to follow
-  * @param max_depth [Number = null] the max depth default is depth + 2
+  * @param max_depth [Number = null] the max depth default is depth + 2; if -1 All Children are loaded
   * @param load_ptr [Bool = false] to load or not the ptr
   * @param depth [Number = 0] current depth default at 0
   * @returns [Promise] the `_json` attribute is returned when resolved
@@ -171,13 +171,44 @@ class G_root.JsonProcess extends G_root.Process
     targetJsonProcess = G_root.JsonProcess._getJsonProcess(json)
     G_root.JsonProcess._registerCallback(targetJsonProcess._onChildChange, cb)
 
+  ###*
+  * gets back the real model
+  * @param {Obj} json the Json or a child obtained via create_JsonProcess MUST have a `_server_id`
+  * @returns {Function} call it to unregister the callback
+  ###
+  @getModel: (json) ->
+    targetJsonProcess = G_root.JsonProcess._getJsonProcess(json)
+    return targetJsonProcess._model
+
+  ###*
+  * add to the max_depth and it's child
+  * @param {Obj} json the Json or a child obtained via create_JsonProcess MUST have a `_server_id`
+  * @param {Number} new max_dapth to add in children
+  * @returns {Function} call it to unregister the callback
+  ###
+  @addDepth: (json, depth_to_add) ->
+    if !depth_to_add or depth_to_add < 0
+      return Promise.reject(new Error("JsonProcess.addDepth param [depth_to_add] must be > 0"))
+    targetJsonProcess = G_root.JsonProcess._getJsonProcess(json)
+    targetJsonProcess._max_depth += depth_to_add
+    targetJsonProcess._is_rdy = targetJsonProcess._update.call(targetJsonProcess).then(
+      (_json) ->
+        for handler in G_root.JsonProcess._type_handler
+          if (targetJsonProcess._model instanceof handler.modelType and
+          typeof handler.set_children_depth_handler == 'function'
+          )
+            return handler.set_children_depth_handler(_json, targetJsonProcess._max_depth)
+
+    )
+    targetJsonProcess._is_rdy
+
   @_getJsonProcess: (obj) ->
     if obj && obj._server_id
-      return G_root.JsonProcess._JsonProcess[model._server_id]
-    throw new Error ("_getJsonProcess paramaeter must have a '_server_id' attribute")
+      return G_root.JsonProcess._JsonProcess[obj._server_id]
+    throw new Error ("_getJsonProcess param must have a '_server_id' attribute")
 
   _update: ->
-    if (@_max_depth < @_depth)
+    if (@_max_depth != -1 && @_max_depth < @_depth)
       return Promise.resolve({
         _server_id: @_json._server_id
         _constructor_name: @_model.constructor.name,
@@ -206,8 +237,28 @@ class G_root.JsonProcess extends G_root.Process
   * }
   *```  ###
   @registerHandler: (handler) ->
+    G_root.JsonProcess._check_handler_params(handler)
     G_root.JsonProcess._type_handler.push(handler)
     G_root.JsonProcess._type_handler.sort(G_root.JsonProcess._register_sort)
+
+  @_check_handler_params: (handler) ->
+    param_to_check = [
+      { attr_name: "modelType", expected_type: "function" },
+      { attr_name: "modelName", expected_type: "string" },
+      { attr_name: "prority", expected_type: "number" },
+      { attr_name: "handler", expected_type: "function" }
+    ]
+    err = ""
+    if (typeof handler != 'object')
+      throw new Error ("JsonProcess.registerHandler parameter must be an object")
+
+    for param in param_to_check
+      if (typeof handler[param.attr_name] != param.expected_type)
+        err += "JsonProcess.registerHandler parameter [#{param.attr_name}"
+        err += "] must be a #{param.expected_type}\n"
+    if (err != "")
+      throw new Error(err)
+
   @_register_sort: (a, b) ->
     return b.prority - a.prority
 

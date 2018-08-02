@@ -61,7 +61,7 @@ Static Method to create a JsonProcess
 ### Params:
 
 * *model* [Model] SpinalCore model to follow
-* *max_depth* [Number = null] the max depth default is depth + 2
+* *max_depth* [Number = null] the max depth default is depth + 2; if -1 All Children are loaded
 * *load_ptr* [Bool = false] to load or not the ptr
 * *depth* [Number = 0] current depth default at 0
 
@@ -76,7 +76,7 @@ Static Method to create a JsonProcess
 ### Params:
 
 * *server_id* [Number] SpinalCore model to follow
-* *max_depth* [Number = null] the max depth default is depth + 2
+* *max_depth* [Number = null] the max depth default is depth + 2; if -1 All Children are loaded
 * *load_ptr* [Bool = false] to load or not the ptr
 * *depth* [Number = 0] current depth default at 0
 
@@ -118,6 +118,31 @@ Add a callback to call on Model change (child only)
 
 * **Obj** *json* the Json or a child obtained via create_JsonProcess MUST have a `_server_id`
 * **Function** *cb* the function to be called
+
+### Return:
+
+* **Function** call it to unregister the callback
+
+## getModel(json)
+
+gets back the real model
+
+### Params:
+
+* **Obj** *json* the Json or a child obtained via create_JsonProcess MUST have a `_server_id`
+
+### Return:
+
+* **Function** call it to unregister the callback
+
+## addDepth(json, new)
+
+add to the max_depth and it's child
+
+### Params:
+
+* **Obj** *json* the Json or a child obtained via create_JsonProcess MUST have a `_server_id`
+* **Number** *new* max_dapth to add in children
 
 ### Return:
 

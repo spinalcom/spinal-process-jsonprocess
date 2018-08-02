@@ -2,9 +2,25 @@ require("spinal-core-connectorjs")
 G_root = if typeof window == "undefined" then global else window
 
 module.exports = {
+
+  ###*
+  * [Model] The declaration of the Model
+  ###
   modelType: G_root.Model,
+
+  ###*
+  * [String] The constructor name of the Model
+  ###
   modelName: "Model",
+
+  ###*
+  * [Number] the defaut handler executed is the one with the highiest priority
+  ###
   prority: 0
+
+  ###*
+  * [Function] The handler itself return a promise with the _json in the resolve
+  ###
   handler: () ->
     _json = @_json
     _model = @_model
@@ -22,4 +38,22 @@ module.exports = {
         _json.data[model_key]
     return Promise.all(prom).then((data) ->
       return _json)
+
+  ###*
+  * handler to "update" the max_depth of children
+  * Optionnal, if  not definied will use the default one (Model / Lst / Ptr)
+  * @returns a promise with the _json in the resolve
+  ###
+  set_children_depth_handler: (_json, new_max_depth) ->
+    process = G_root.JsonProcess._getJsonProcess(_json)
+    _model = process._model
+    prom = for model_key in _model._attribute_names
+      targetJsonProcess = G_root.JsonProcess._getJsonProcess(_json.data[model_key])
+      if (targetJsonProcess._max_depth < new_max_depth)
+        targetJsonProcess._max_depth = new_max_depth
+        targetJsonProcess._is_rdy = targetJsonProcess._update()
+      targetJsonProcess._is_rdy
+    return Promise.all(prom).then(() ->
+      return process._json
+    )
 }
