@@ -309,6 +309,7 @@ class G_root.JsonProcess extends G_root.Process
       id: G_root.JsonProcess._registerID++
       func: cb
     }
+    arr.push(obj)
     return (() ->
       idx = arr.indexOf(obj)
       if idx != -1
